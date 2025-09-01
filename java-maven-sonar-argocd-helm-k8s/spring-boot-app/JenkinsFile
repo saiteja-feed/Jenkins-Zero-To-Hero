@@ -1,71 +1,69 @@
 pipeline {
-    agent {
-        docker {
-            // Official Maven image with JDK 17
-            image 'maven:3.9.3-eclipse-temurin-17'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock --network host'
-        }
-    }
+    agent any  // Use the host machine
 
     environment {
         SONAR_URL = "http://localhost:9000"
         DOCKER_IMAGE = "saitejafeed/ultimate-cicd:${BUILD_NUMBER}"
-        GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-        GIT_USER_NAME = "saiteja-feed"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out code...'
                 git branch: 'main', url: 'https://github.com/saiteja-feed/Jenkins-Zero-To-Hero.git'
             }
         }
 
         stage('Build and Test') {
             steps {
-                echo 'Building Maven project...'
-                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    sh 'mvn clean package'
-                }
+                sh '''
+                    cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+                    mvn clean package
+                '''
             }
         }
 
         stage('Static Code Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                        sh "mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}"
-                    }
+                    sh '''
+                        cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+                        mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                    '''
                 }
             }
         }
 
         stage('Build and Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                        sh """
-                            docker login -u $DOCKER_USER -p $DOCKER_PASS
-                            docker build -t $DOCKER_IMAGE .
-                            docker push $DOCKER_IMAGE
-                        """
-                    }
+                withCredentials([usernamePassword(credentialsId: 'docker-cred', 
+                                                  usernameVariable: 'DOCKER_USER', 
+                                                  passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+                        docker login -u $DOCKER_USER -p $DOCKER_PASS
+                        docker build -t ${DOCKER_IMAGE} .
+                        docker push ${DOCKER_IMAGE}
+                    '''
                 }
             }
         }
 
         stage('Update Deployment File') {
+            environment {
+                GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
+                GIT_USER_NAME = "saiteja-feed"
+            }
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                    sh """
-                        git config user.email "abhishek.xyz@gmail.com"
-                        git config user.name "Abhishek Veeramalla"
+                    sh '''
+                        git config user.email "saiteja@example.com"
+                        git config user.name "Saiteja"
+                        BUILD_NUMBER=${BUILD_NUMBER}
                         sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                         git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                    """
+                    '''
                 }
             }
         }

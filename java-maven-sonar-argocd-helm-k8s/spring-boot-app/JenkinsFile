@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'abhishekf5/maven-abhishek-docker-agent:v1'
+      image 'saitejafeed/saijenkins/maven-abhishek-docker-agent:v1'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock --network host'
     }
   }
@@ -30,7 +30,7 @@ pipeline {
     }
     stage('Build and Push Docker Image') {
       environment {
-        DOCKER_IMAGE = "abhishekf5/ultimate-cicd:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "saitejafeed/saijenkins/ultimate-cicd:${BUILD_NUMBER}"
       }
       steps {
         withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -46,13 +46,13 @@ pipeline {
     stage('Update Deployment File') {
       environment {
         GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-        GIT_USER_NAME = "iam-veeramalla"
+        GIT_USER_NAME = "saiteja-feed"
       }
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh '''
-            git config user.email "abhishek.xyz@gmail.com"
-            git config user.name "Abhishek Veeramalla"
+            git config user.email "saitejam@875gmail.com"
+            git config user.name "saiteja-feed"
             BUILD_NUMBER=${BUILD_NUMBER}
             sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
             git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml

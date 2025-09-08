@@ -6,7 +6,7 @@ pipeline {
     }
   }
   environment {
-    GIT_REPO_NAME = "java-maven-sonar-argocd-helm-k8s"
+    GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
     GIT_USER_NAME = "saiteja-feed"
   }
   stages {

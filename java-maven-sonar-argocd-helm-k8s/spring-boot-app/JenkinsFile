@@ -41,7 +41,7 @@ pipeline {
       }
       steps {
         script {
-          withCredentials([string(credentialsId: 'docker-cred', variable: 'DOCKER_PASS')]) {
+          withCredentials([string(credentialsId: 'fb745231-e028-4c0f-a596-d8ab9b4d9a17', variable: 'DOCKER_PASS')]) {
             sh '''
               cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
               docker login -u saitejafeed -p $DOCKER_PASS

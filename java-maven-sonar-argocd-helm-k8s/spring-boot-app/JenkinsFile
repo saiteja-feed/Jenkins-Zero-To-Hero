@@ -23,16 +23,6 @@ pipeline {
         ])
       }
     }
-    stage('Debug') {
-      steps {
-        sh '''
-          pwd
-          ls -la $WORKSPACE
-          git status
-          git remote -v
-        '''
-      }
-    }
     stage('Build and Test') {
       steps {
         sh 'ls -ltr'

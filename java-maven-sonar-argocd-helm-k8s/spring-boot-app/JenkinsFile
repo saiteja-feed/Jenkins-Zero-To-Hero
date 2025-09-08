@@ -10,6 +10,11 @@ pipeline {
     GIT_USER_NAME = "saiteja-feed"
   }
   stages {
+    stage('Prepare Workspace') {
+      steps {
+        sh 'git config --global --add safe.directory $WORKSPACE'
+      }
+    }
     stage('Checkout') {
       steps {
         // Checkout the repository inside the container workspace

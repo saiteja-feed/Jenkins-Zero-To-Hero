@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'saitejafeed/jenkins-agent:v1'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock --network host'
+            args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v $WORKSPACE:$WORKSPACE --network host'
         }
     }
 
@@ -62,8 +62,8 @@ pipeline {
         stage('Update Deployment File') {
             steps {
                 script {
-                    // Run Git commands inside the repo
-                    dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                    // Run Git commands inside the mounted workspace
+                    dir("$WORKSPACE/java-maven-sonar-argocd-helm-k8s/spring-boot-app") {
                         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                             sh '''
                                 git config user.email "saitejam875@gmail.com"

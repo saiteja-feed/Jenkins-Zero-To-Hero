@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: spring-boot-app
-        image: saitejafeed/ultimate-cicd:replaceImageTag
+        image: saitejafeed/jenkins-agent:v1
         ports:
         - containerPort: 8080
